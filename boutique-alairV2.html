@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boutique ALAIR</title>
+    <style>
+      body { margin: 0; min-height: 100vh; background: #080C10; color: #F0F4F8; font-family: 'DM Sans', sans-serif; }
+      #root { min-height: 100vh; }
+    </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      async function loadApp() {
+        const rootElement = document.getElementById('root');
+        try {
+          const response = await fetch('boutique-alairV2.jsx');
+          if (!response.ok) throw new Error('Impossible de charger boutique-alairV2.jsx');
+          let code = await response.text();
+
+          code = code.replace(/import\s+\{[^}]+\}\s+from\s+['"]react['"];?\s*/g, 'const { useState, useEffect, useCallback, useRef } = React;\n');
+          code = code.replace(/export\s+default\s+function\s+App\s*\(/g, 'function App(');
+
+          const transformed = Babel.transform(code, { presets: ['react'] }).code;
+          window.storage = window.storage || {
+            async get() { return null; },
+            async set() {}
+          };
+
+          eval(transformed);
+          ReactDOM.createRoot(rootElement).render(React.createElement(App));
+        } catch (error) {
+          rootElement.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#F0F4F8;">Erreur lors du chargement de l\'application : ' + error.message + '</div>';
+          console.error(error);
+        }
+      }
+      loadApp();
+    </script>
+  </body>
+</html>
